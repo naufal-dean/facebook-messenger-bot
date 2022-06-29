@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import logger from '../../utils/logger';
 import Message from '../../models/message';
 import User, { USER_STATUS, NEXT_USER_STATUS } from '../../models/user';
+import { daysUntilBirthday } from '../../utils/date';
 
 const saveOrUpdateUser = async (_id: string, message?: string) => {
     let userInstance = await User.findById(_id);
@@ -78,7 +79,7 @@ const handleMessage = async (senderId: string, message: any) => {
             break;
         case USER_STATUS.YES_NO_ANSWERED:
             response = ['yes', 'yeah', 'yup'].includes(message.text)
-                ? 'There are <N> days left until your next birthday'
+                ? `There are ${daysUntilBirthday(userSaved.birthDate)} days left until your next birthday`
                 : 'Goodbye 👋';
             break;
     }
