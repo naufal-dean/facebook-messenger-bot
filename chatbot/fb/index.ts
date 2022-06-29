@@ -69,7 +69,7 @@ const handleMessage = async (senderId: string, message: any) => {
     let response = '';
     switch (userSaved.status) {
         case USER_STATUS.START:
-            response = 'Hello there! What is your name?';
+            response = 'Hello there! What is your name? 😊';
             break;
         case USER_STATUS.NAME_ANSWERED:
             response = `Hi ${userSaved.name}, what is your birthday ('YYYY-MM-DD')?`;
@@ -97,7 +97,7 @@ const callSendTextAPI = async (recipientId: string, text: string) => {
 }
 
 const callSendAPI = async (recipientId: string, message: any) => {
-    logger.info(`Send message to ${recipientId}...`);
+    logger.info(`sent message to ${recipientId}...`);
     
     const payload = {
         'recipient': {
@@ -105,7 +105,6 @@ const callSendAPI = async (recipientId: string, message: any) => {
         },
         'message': message,
     };
-    logger.info(JSON.stringify(payload))
     const response = await fetch('https://graph.facebook.com/v2.6/me/messages?' + new URLSearchParams({
         access_token: process.env.PAGE_ACCESS_TOKEN || '',
     }), {
@@ -117,7 +116,7 @@ const callSendAPI = async (recipientId: string, message: any) => {
     });
     const data = await response.json();
 
-    logger.info(JSON.stringify(data));
+    logger.info('message sent: ' + JSON.stringify(data));
 }
 
 export { handleMessage, handlePostback, callSendAPI };
