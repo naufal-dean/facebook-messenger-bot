@@ -1,3 +1,6 @@
+import { handleMessage, handlePostback } from '../chatbot/fb';
+import logger from '../utils/logger';
+
 import type { Request, Response } from 'express';
 
 const get = async (req: Request, res: Response) => {
@@ -6,25 +9,30 @@ const get = async (req: Request, res: Response) => {
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
-    // Checks the mode and token sent is correct
+    // Check mode and verify token
     if (mode && token && mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
-        // Responds with the challenge token from the request
-        console.log('WEBHOOK_VERIFIED');
+        // Return challenge token
+        logger.info('Webhook verified!');
         res.status(200).send(challenge);
     } else {
-        // Responds with '403 Forbidden' if verify tokens do not match
+        // Token does not match, return 403
         res.sendStatus(403);
     }
 }
 
 const post = async (req: Request, res: Response) => {
-    // Checks if this is an event from a page subscription
+    // Check if this is an event from a page subscription
     if (req.body.object === 'page') {
-        // Iterates entry
+        // Iterate entry
         req.body.entry.forEach(function (entry: any) {
-            // Gets the message
-            const webhook_event = entry.messaging[0];
-            console.log(webhook_event);
+            const event = entry.messaging[0];
+            const senderId = event.sender.id;
+            // Handle message
+            if (event.message) {
+                handleMessage(senderId, event.message);
+            } else if (event.postback) {
+                handlePostback(senderId, event.postback);
+            }
         });
         res.status(200).send('EVENT_RECEIVED');
     } else {
