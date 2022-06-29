@@ -1,16 +1,31 @@
 import type { Request, Response } from 'express';
+import Message from '../models/message';
 
 const get = async (req: Request, res: Response) => {
-    // TODO: implement
-    res.sendStatus(501);
+    // Retrieve all messages
+    try {
+        const messages = await Message.find();
+        res.status(200).json(messages);
+    } catch (err) {
+        res.status(500).json({
+            message: 'database error'
+        });
+    }
 }
 
 const getById = async (req: Request, res: Response) => {    
     // Parse path params
     const messageId = req.params.id;
 
-    // TODO: implement
-    res.sendStatus(501);
+    // Retrieve message with messageId
+    try {
+        const message = await Message.findById(messageId);
+        res.status(200).json(message);
+    } catch (err) {
+        res.status(500).json({
+            message: 'database error'
+        });
+    }
 }
 
 export default { get, getById };
