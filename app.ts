@@ -8,6 +8,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import router from './routes';
+import initDbConn from './db';
+import logger from './utils/logger';
 
 const app = express();
 const server = createServer(app);
@@ -20,4 +22,6 @@ app.use(morgan('dev'));
 
 app.use('/', router);
 
-server.listen(port, () => console.info(`Listening on port ${port}...`));
+initDbConn(process.env.MONGODB_URI);
+
+server.listen(port, () => logger.info(`listening on port ${port}`));
