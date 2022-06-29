@@ -58,14 +58,14 @@ const handleMessage = async (senderId: string, message: any) => {
 
     // Save or update user
     const userSaved = await saveOrUpdateUser(senderId, message.text);
+    if (!userSaved) {
+        return;
+    }
 
     // Save message
     await saveMessage(message.mid, message.text, senderId);
 
     // Make response
-    if (!userSaved) {
-        return;
-    }
     let response = '';
     switch (userSaved.status) {
         case USER_STATUS.START:
