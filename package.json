@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.ts",
   "scripts": {
+    "dev": "nodemon app.ts",
     "start": "nodemon app.ts",
     "test": "jest"
   },
