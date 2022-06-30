@@ -1,87 +1,19 @@
 import fetch from 'node-fetch';
 
 import logger from '../../utils/logger';
-import Message from '../../models/message';
-import User, { USER_STATUS, NEXT_USER_STATUS } from '../../models/user';
+import userRepository from '../../repositories/user';
+import messageRepository from '../../repositories/message';
+import { USER_STATUS } from '../../models/user';
 import { daysUntilBirthday } from '../../utils/date';
-
-const saveOrResetUser = async (_id: string, message?: string) => {
-    return saveOrUpdateUser(_id, message, true);
-}
-
-const saveOrUpdateUser = async (_id: string, message?: string, resetUser: boolean = false) => {
-    let userInstance = await User.findById(_id);
-    if (!userInstance) {
-        // New user
-        userInstance = new User({
-            _id,
-            status: USER_STATUS.START,
-        });
-    } else if (resetUser) {
-        // Reset user
-        userInstance.name = undefined;
-        userInstance.birthDate = undefined;
-        userInstance.status = USER_STATUS.START;
-    } else {
-        // Existing user
-        userInstance.status = NEXT_USER_STATUS[userInstance.status];
-        if (userInstance.status === USER_STATUS.START) {
-            // Reset user
-            userInstance.name = undefined;
-            userInstance.birthDate = undefined;
-        }
-    }
-    
-    // Update user property
-    switch (userInstance.status) {
-        case USER_STATUS.NAME_ANSWERED:
-            userInstance.name = message;
-            break;
-        case USER_STATUS.BIRTHDATE_ANSWERED:
-            userInstance.birthDate = message ? new Date(message) : undefined;
-            break;
-    }
-
-    try {
-        const userSaved = await userInstance.save();
-        logger.info(`user ${userSaved._id} saved`);
-        return { user: userSaved, succeed: true };
-    } catch (err) {
-        logger.error(`failed to save user ${_id}: ${err}`);
-        return { user: userInstance, succeed: false };
-    }
-}
-
-const savePostbackMessage = async (_id: string, text: string, userId: string) => {
-    return saveMessage(_id, text, userId, true);
-}
-
-const saveMessage = async (_id: string, text: string, userId: string, isPostbackMessage: boolean = false) => {
-    const messageInstance = new Message({
-        _id,
-        text,
-        userId,
-        isPostbackMessage,
-    });
-
-    try {
-        const messageSaved = await messageInstance.save();
-        logger.info(`message ${messageSaved._id} saved`);
-        return { succeed: true };
-    } catch (err) {
-        logger.error(`failed to save message ${_id}: ${err}`);
-        return { succeed: false };
-    }
-}
 
 const handleMessage = async (senderId: string, message: any) => {
     logger.info(`handle message from ${senderId}`);
 
     // Save or update user
-    const { user, succeed: userSaveSucceed } = await saveOrUpdateUser(senderId, message.text);
+    const { user, succeed: userSaveSucceed } = await userRepository.saveOrUpdateUser(senderId, message.text);
 
     // Save message
-    await saveMessage(message.mid, message.text, senderId);
+    await messageRepository.saveMessage(message.mid, message.text, senderId);
     if (!userSaveSucceed) {
         // Failed to save user
         if (user.status === USER_STATUS.BIRTHDATE_ANSWERED) {
@@ -127,13 +59,13 @@ const handlePostback = async (senderId: string, postback: any) => {
     switch (postback.payload) {
         case 'start':
             // Save or reset user
-            const { user, succeed: userSaveSucceed } = await saveOrResetUser(senderId, postback.payload);
-            if (!userSaveSucceed) {
-                return;
-            }
+            const { succeed: messageSaveSucceed } = await userRepository.saveOrResetUser(senderId, postback.payload);
 
             // Save message
-            await savePostbackMessage(postback.mid, postback.payload, senderId);
+            await messageRepository.savePostbackMessage(postback.mid, postback.payload, senderId);
+            if (!messageSaveSucceed) {
+                return;
+            }
 
             // Make response
             callSendTextAPI(senderId, 'Hello there! What is your name? 😊');
