@@ -1,7 +1,7 @@
+import type { Request, Response } from 'express';
+
 import { handleMessage, handlePostback } from '../chatbot/fb';
 import logger from '../utils/logger';
-
-import type { Request, Response } from 'express';
 
 const get = async (req: Request, res: Response) => {
     // Parse the query params
