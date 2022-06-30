@@ -25,6 +25,11 @@ const saveOrUpdateUser = async (_id: string, message?: string, resetUser: boolea
     } else {
         // Existing user
         userInstance.status = NEXT_USER_STATUS[userInstance.status];
+        if (userInstance.status === USER_STATUS.START) {
+            // Reset user
+            userInstance.name = undefined;
+            userInstance.birthDate = undefined;
+        }
     }
     
     // Update user property
