@@ -73,7 +73,7 @@ const saveMessage = async (_id: string, text: string, userId: string, isPostback
 }
 
 const handleMessage = async (senderId: string, message: any) => {
-    logger.info(`Handle message from ${senderId}...`);
+    logger.info(`handle message from ${senderId}`);
 
     // Save or update user
     const userSaved = await saveOrUpdateUser(senderId, message.text);
@@ -107,7 +107,7 @@ const handleMessage = async (senderId: string, message: any) => {
 }
 
 const handlePostback = async (senderId: string, postback: any) => {
-    logger.info(`Handle postback from ${senderId}...`);
+    logger.info(`handle postback from ${senderId}`);
 
     // Supported postback(s):
     // 1. start: getting started button
@@ -134,7 +134,7 @@ const callSendTextAPI = async (recipientId: string, text: string) => {
 }
 
 const callSendAPI = async (recipientId: string, message: any) => {
-    logger.info(`sent message to ${recipientId}...`);
+    logger.info(`sent message to ${recipientId}`);
     
     const payload = {
         'recipient': {
