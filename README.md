@@ -41,3 +41,27 @@ Naufal Dean Anugrah - [naufal-dean](https://github.com/naufal-dean)
 
 ## How to test
 1. Use command `npm run test`.
+
+## Demo
+
+### Chatbot
+1. Normal Scenario 1 (Showing Birthday Countdown)<br>
+    ![alt Normal Scenario 1 (Show Birthday Countdown)](./demo/bot-scenario-1.gif "Normal Scenario 1 (Show Birthday Countdown)")
+2. Normal Scenario 2 (Not Showing Birthday Countdown)<br>
+    ![alt Normal Scenario 2 (Not Showing Birthday Countdown)](./demo/bot-scenario-2.gif "Normal Scenario 2 (Not Showing Birthday Countdown)")
+3. Special Birthday Message<br>
+    ![alt Special Birthday Message](./demo/bot-scenario-3.gif "Special Birthday Message")
+4. Date Validation Message<br>
+    ![alt Date Validation Message](./demo/bot-scenario-4.gif "Date Validation Message")
+5. Reinitiate Conversation<br>
+    ![alt Reinitiate Conversation](./demo/bot-scenario-5.gif "Reinitiate Conversation")
+
+### REST API
+1. Get All Messages<br>
+    ![alt Get All Messages](./demo/rest-get-all-messages.png "Get All Messages")
+2. Get Message by Id<br>
+    ![alt Get Message by Id](./demo/rest-get-message-by-id.png "Get Message by Id")
+3. Get Message by Id Not Found<br>
+    ![alt Get Message by Id Not Found](./demo/rest-get-message-by-id-not-found.png "Get Message by Id Not Found")
+4. Get Summary<br>
+    ![alt Get Summary](./demo/rest-get-summary.png "Get Summary")
