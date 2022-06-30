@@ -97,8 +97,13 @@ const handleMessage = async (senderId: string, message: any) => {
             response = 'Cool! By the way, do you want to know your birthday countdown?'
             break;
         case USER_STATUS.YES_NO_ANSWERED:
+            const daysLeft = daysUntilBirthday(userSaved.birthDate);
             response = ['yes', 'yeah', 'yup'].includes(message.text)
-                ? `There are ${daysUntilBirthday(userSaved.birthDate)} days left until your next birthday`
+                ? (
+                    daysLeft === 0
+                        ? `Wow, today is your birthday! Happy birthday to you, ${userSaved.name}!!! 🎉🎉🎉`
+                        : `There are ${daysLeft} days left until your next birthday`
+                )
                 : 'Goodbye 👋';
             break;
     }
