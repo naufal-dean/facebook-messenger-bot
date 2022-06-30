@@ -14,6 +14,10 @@ const MessageSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    isPostbackMessage: {
+        type: Boolean,
+        default: false
+    }
 });
 
 const Message = mongoose.model('Message', MessageSchema);
