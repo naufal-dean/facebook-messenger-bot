@@ -51,6 +51,10 @@ describe('messages controller', () => {
     });
 
     describe('getById', () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+        
         it('succeed call', async () => {
             // Arrange
             const paramId = 'abcdefghij';
