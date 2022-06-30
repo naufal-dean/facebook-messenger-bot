@@ -45,15 +45,15 @@ const saveOrUpdateUser = async (_id: string, message?: string, resetUser: boolea
     try {
         const userSaved = await userInstance.save();
         logger.info(`user ${userSaved._id} saved`);
-        return userSaved;
+        return { user: userSaved, succeed: true };
     } catch (err) {
         logger.error(`failed to save user ${_id}: ${err}`);
-        return null;
+        return { user: userInstance, succeed: false };
     }
 }
 
 const savePostbackMessage = async (_id: string, text: string, userId: string) => {
-    saveMessage(_id, text, userId, true);
+    return saveMessage(_id, text, userId, true);
 }
 
 const saveMessage = async (_id: string, text: string, userId: string, isPostbackMessage: boolean = false) => {
@@ -67,8 +67,10 @@ const saveMessage = async (_id: string, text: string, userId: string, isPostback
     try {
         const messageSaved = await messageInstance.save();
         logger.info(`message ${messageSaved._id} saved`);
+        return { succeed: true };
     } catch (err) {
         logger.error(`failed to save message ${_id}: ${err}`);
+        return { succeed: false };
     }
 }
 
@@ -76,32 +78,37 @@ const handleMessage = async (senderId: string, message: any) => {
     logger.info(`handle message from ${senderId}`);
 
     // Save or update user
-    const userSaved = await saveOrUpdateUser(senderId, message.text);
-    if (!userSaved) {
-        return;
-    }
+    const { user, succeed: userSaveSucceed } = await saveOrUpdateUser(senderId, message.text);
 
     // Save message
     await saveMessage(message.mid, message.text, senderId);
-
+    if (!userSaveSucceed) {
+        // Failed to save user
+        if (user.status === USER_STATUS.BIRTHDATE_ANSWERED) {
+            // Invalid birthdate format, assuming db is working fine
+            callSendTextAPI(senderId, `Please input correct birth date format ('YYYY - MM - DD')`);
+        }
+        return;
+    }
+    
     // Make response
     let response = '';
-    switch (userSaved.status) {
+    switch (user.status) {
         case USER_STATUS.START:
             response = 'Hello there! What is your name? 😊';
             break;
         case USER_STATUS.NAME_ANSWERED:
-            response = `Hi ${userSaved.name}, what is your birthday ('YYYY-MM-DD')?`;
+            response = `Hi ${user.name}, what is your birth date ('YYYY-MM-DD')?`;
             break;
         case USER_STATUS.BIRTHDATE_ANSWERED:
             response = 'Cool! By the way, do you want to know your birthday countdown?'
             break;
         case USER_STATUS.YES_NO_ANSWERED:
-            const daysLeft = daysUntilBirthday(userSaved.birthDate);
+            const daysLeft = daysUntilBirthday(user.birthDate);
             response = ['yes', 'yeah', 'yup'].includes(message.text)
                 ? (
                     daysLeft === 0
-                        ? `Wow, today is your birthday! Happy birthday to you, ${userSaved.name}!!! 🎉🎉🎉`
+                        ? `Wow, today is your birthday! Happy birthday to you, ${user.name}!!! 🎉🎉🎉`
                         : `There are ${daysLeft} days left until your next birthday`
                 )
                 : 'Goodbye 👋';
@@ -120,8 +127,8 @@ const handlePostback = async (senderId: string, postback: any) => {
     switch (postback.payload) {
         case 'start':
             // Save or reset user
-            const userSaved = await saveOrResetUser(senderId, postback.payload);
-            if (!userSaved) {
+            const { user, succeed: userSaveSucceed } = await saveOrResetUser(senderId, postback.payload);
+            if (!userSaveSucceed) {
                 return;
             }
 
