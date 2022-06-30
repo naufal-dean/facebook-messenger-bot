@@ -5,7 +5,11 @@ import Message from '../../models/message';
 import User, { USER_STATUS, NEXT_USER_STATUS } from '../../models/user';
 import { daysUntilBirthday } from '../../utils/date';
 
-const saveOrUpdateUser = async (_id: string, message?: string) => {
+const saveOrResetUser = async (_id: string, message?: string) => {
+    return saveOrUpdateUser(_id, message, true);
+}
+
+const saveOrUpdateUser = async (_id: string, message?: string, resetUser: boolean = false) => {
     let userInstance = await User.findById(_id);
     if (!userInstance) {
         // New user
@@ -13,6 +17,11 @@ const saveOrUpdateUser = async (_id: string, message?: string) => {
             _id,
             status: USER_STATUS.START,
         });
+    } else if (resetUser) {
+        // Reset user
+        userInstance.name = undefined;
+        userInstance.birthDate = undefined;
+        userInstance.status = USER_STATUS.START;
     } else {
         // Existing user
         userInstance.status = NEXT_USER_STATUS[userInstance.status];
@@ -38,11 +47,16 @@ const saveOrUpdateUser = async (_id: string, message?: string) => {
     }
 }
 
-const saveMessage = async (_id: string, text: string, userId: string) => {
+const savePostbackMessage = async (_id: string, text: string, userId: string) => {
+    saveMessage(_id, text, userId, true);
+}
+
+const saveMessage = async (_id: string, text: string, userId: string, isPostbackMessage: boolean = false) => {
     const messageInstance = new Message({
         _id,
         text,
         userId,
+        isPostbackMessage,
     });
 
     try {
@@ -90,6 +104,24 @@ const handleMessage = async (senderId: string, message: any) => {
 const handlePostback = async (senderId: string, postback: any) => {
     logger.info(`Handle postback from ${senderId}...`);
 
+    // Supported postback(s):
+    // 1. start: getting started button
+
+    switch (postback.payload) {
+        case 'start':
+            // Save or reset user
+            const userSaved = await saveOrResetUser(senderId, postback.payload);
+            if (!userSaved) {
+                return;
+            }
+
+            // Save message
+            await savePostbackMessage(postback.mid, postback.payload, senderId);
+
+            // Make response
+            callSendTextAPI(senderId, 'Hello there! What is your name? 😊');
+            break;
+    }
 }
 
 const callSendTextAPI = async (recipientId: string, text: string) => {
