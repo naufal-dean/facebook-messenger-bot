@@ -18,7 +18,7 @@ Naufal Dean Anugrah - [naufal-dean](https://github.com/naufal-dean)
 ### Development
 1. Install all required dependencies. Use command `npm install`.
 2. Prepare MongoDB deployment (for example using [MongoDB Atlas](https://www.mongodb.com/atlas/database)).
-3. Copy `.env.example` to `.env` and adjust the values.
+3. Copy `.env.example` to `.env` and adjust its values.
     - Set VERIFY_TOKEN to a random secret string, it will be used to verify webhook subscribe process.
     - Skip PAGE_ACCESS_TOKEN for now.
     - Set MONGODB_URI to your MongoDB connection string.
